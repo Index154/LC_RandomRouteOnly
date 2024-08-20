@@ -21,7 +21,7 @@ public class Helper(){
             newLevelId = possibleLevels[Random.Range(0, possibleLevels.Count)].levelID;
         }
 		
-		if (__instance.CanChangeLevels())
+		if (__instance.CanChangeLevels() && newLevelId != __instance.currentLevel.levelID)
 		{
 			__instance.ChangeLevelServerRpc(newLevelId, UnityEngine.Object.FindObjectOfType<Terminal>().groupCredits);
             if(!randomLevel) {

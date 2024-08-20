@@ -1,7 +1,7 @@
 # RandomRouteOnly
 A simple mod to make your runs more interesting by making your ship travel to a random moon every day (unless there are 0 quota days remaining). Every player in the lobby can use the random command in the terminal to reroll the moon only once per quota! Routing to a specific moon is entirely disabled.
 
-Requires routerandom and AutoFlyToCompany.
+Requires routerandom.
 ⠀
 ⠀
 ⠀
