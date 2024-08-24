@@ -10,27 +10,40 @@ public class TerminalPatch {
 
 	private static readonly TerminalNode noReroll = new(){
 		name = "noReroll",
-		displayText = "\nYou have no rerolls left for this quota!\nLand the ship or let somebody else use the command.\n\n\n",
+		displayText = "\nYou have no rerolls left for this quota!\nLand the ship or let somebody else use the command.\n\nYour rerolls will be set to " + RandomRouteOnly.configManager.rerollsPerPlayer.Value + " at the start of the next quota\n\n\n",
 		clearPreviousText = true
 	};
 
 	private static readonly TerminalNode noManualRoutesAllowed = new(){
 		name = "noManualRoutesAllowed",
-		displayText = "\nYou are not allowed to choose a moon manually!\nLand the ship or use the random command.\n\n\n",
+		displayText = "\nYou are not allowed to manually fly to this moon!\nLand the ship or use the command 'random'\n\n\n",
 		clearPreviousText = true
 	};
 
 	[HarmonyPatch("ParsePlayerSentence")]
 	[HarmonyPostfix]
 	private static TerminalNode RestrictRouteUsage(TerminalNode __result){
+
 		if(__result.name == "routeRandom" || __result.name == "routeRandomFilterWeather"){
-			CanReroll cr = GameNetworkManager.Instance.localPlayerController.gameObject.GetComponent<CanReroll>();
-            if(!cr.canReroll){
+			Rerolls cr = GameNetworkManager.Instance.localPlayerController.gameObject.GetComponent<Rerolls>();
+            if(cr.rerolls < 1){
                 return noReroll;
             }
-           	cr.canReroll = false;
-		}else if(__result.name.Contains("route") && __result.name != "routeRandomFilterWeather"){
+           	cr.rerolls -= 1;
+		}else if(__result.name.ToLowerInvariant().Contains("route") && (!__result.name.Contains("Company") || !RandomRouteOnly.configManager.allowCompany.Value)){
 			return noManualRoutesAllowed;
+		}
+		return __result;
+	}
+
+	[HarmonyPatch("TextPostProcess")]
+	[HarmonyPostfix]
+	private static string AddRemainingRerollsText(string modifiedDisplayText, TerminalNode node, ref string __result){
+		if(__result.Contains("Routing autopilot to")){
+			Rerolls cr = GameNetworkManager.Instance.localPlayerController.gameObject.GetComponent<Rerolls>();
+			string sGrammar = "s";
+			if(cr.rerolls == 1){ sGrammar = ""; }
+			__result += "You have " + cr.rerolls + " reroll" + sGrammar + " left for this quota\n\n\n";
 		}
 		return __result;
 	}

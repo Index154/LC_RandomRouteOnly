@@ -10,11 +10,15 @@ public class RandomRouteOnly : BaseUnityPlugin
     public static RandomRouteOnly Instance { get; private set; } = null!;
     internal new static ManualLogSource Logger { get; private set; } = null!;
     internal static Harmony? Harmony { get; set; }
+    internal static ConfigManager configManager = null!;
 
     private void Awake()
     {
         Logger = base.Logger;
         Instance = this;
+
+        configManager = new ConfigManager();
+        configManager.Setup(Config);
 
         Patch();
 

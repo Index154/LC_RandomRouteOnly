@@ -23,8 +23,8 @@ public class StartOfRoundPatch {
 		}else{
 			// Reset player rerolls on the final day
 			foreach(PlayerControllerB player in __instance.allPlayerScripts){
-                CanReroll cr = player.gameObject.GetComponent<CanReroll>();
-                cr.canReroll = true;
+                Rerolls cr = player.gameObject.GetComponent<Rerolls>();
+                cr.rerolls = RandomRouteOnly.configManager.rerollsPerPlayer.Value;
             }
 			Helper.FlyToLevel(ref __instance, false);
 		}

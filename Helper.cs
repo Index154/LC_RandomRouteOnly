@@ -1,9 +1,15 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace RandomRouteOnly;
 
 public class Helper(){
+    static IEnumerator DelayStartGame(float delay){
+        yield return new WaitForSeconds(delay);
+        StartMatchLever lever = UnityEngine.Object.FindObjectOfType<StartMatchLever>();
+        lever.StartGame();
+    }
     public static void FlyToLevel(ref StartOfRound __instance, bool randomLevel){
 
 		if(!__instance.NetworkManager.IsHost) return;
@@ -24,9 +30,10 @@ public class Helper(){
 		if(__instance.CanChangeLevels() && newLevelId != __instance.currentLevel.levelID){
 			__instance.ChangeLevelServerRpc(newLevelId, UnityEngine.Object.FindObjectOfType<Terminal>().groupCredits);
             if(!randomLevel) {
-                new WaitForSeconds(4f);
-                __instance.StartGame();
+                // Delay to prevent possible issues due to landing to quickly
+                __instance.StartCoroutine(DelayStartGame(8f));
             }
 		}
 	}
+
 }

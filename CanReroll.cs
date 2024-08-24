@@ -1,6 +1,6 @@
 using UnityEngine;
 
 namespace RandomRouteOnly;
-internal class CanReroll : MonoBehaviour{
-    public bool canReroll = true;
+internal class Rerolls : MonoBehaviour{
+    public int rerolls = RandomRouteOnly.configManager.rerollsPerPlayer.Value;
 }

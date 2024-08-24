@@ -10,6 +10,6 @@ public class PlayerControllerBPatch {
     [HarmonyPatch("Awake")]
     [HarmonyPostfix]
     private static void AddRerollValue(PlayerControllerB __instance) {
-        CanReroll cr = __instance.gameObject.AddComponent<CanReroll>();
+        Rerolls cr = __instance.gameObject.AddComponent<Rerolls>();
     }
 }
