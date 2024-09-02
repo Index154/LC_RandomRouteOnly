@@ -31,6 +31,7 @@ public class TerminalPatch {
             }
            	cr.rerolls -= 1;
 		}else if(__result.name.ToLowerInvariant().Contains("route") && (!__result.name.Contains("Company") || !RandomRouteOnly.configManager.allowCompany.Value)){
+			// All manual moon routes should have route in the name... I hope
 			return noManualRoutesAllowed;
 		}
 		return __result;
@@ -40,6 +41,7 @@ public class TerminalPatch {
 	[HarmonyPostfix]
 	private static string AddRemainingRerollsText(string modifiedDisplayText, TerminalNode node, ref string __result){
 		if(__result.Contains("Routing autopilot to")){
+			// Scuffed way of adding text to the command output when the command succeeds
 			Rerolls cr = GameNetworkManager.Instance.localPlayerController.gameObject.GetComponent<Rerolls>();
 			string sGrammar = "s";
 			if(cr.rerolls == 1){ sGrammar = ""; }
