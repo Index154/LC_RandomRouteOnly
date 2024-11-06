@@ -5,6 +5,8 @@ using System.Collections;
 namespace RandomRouteOnly;
 
 public class Helper(){
+
+    public static List<int> levels = [];
     static IEnumerator DelayStartGame(float delay){
         yield return new WaitForSeconds(delay);
         // Land the ship. This is the proper way of doing it to avoid issues
@@ -16,17 +18,15 @@ public class Helper(){
 		if(!__instance.NetworkManager.IsHost) return;
 
 		bool isFirstDay = __instance.gameStats.daysSpent == 0;
-		SelectableLevel[] levels = __instance.levels;
-		var possibleLevels = new List<SelectableLevel>();
+		var possibleLevels = new List<int>();
         int newLevelId = 3;     // 3 is default for flying to company on the final day
 
         if(randomLevel) {
-            foreach(SelectableLevel level in levels){
-                // Exclude from random level pool:
-                // Company, Liquidation and current level (unless it's day 1, otherwise day 1 will never be Experimentation)
-                if(level.levelID != 3 && level.levelID != 11 && (level.levelID != __instance.currentLevel.levelID || isFirstDay)) possibleLevels.Add(level);
+            foreach(int level in levels){
+                // Exclude current level (unless it's day 1, otherwise day 1 will never be Experimentation)
+                if(level != __instance.currentLevel.levelID || isFirstDay) possibleLevels.Add(level);
             }
-            newLevelId = possibleLevels[Random.Range(0, possibleLevels.Count)].levelID;
+            newLevelId = possibleLevels[Random.Range(0, possibleLevels.Count)];
         }
 		
 		if(__instance.CanChangeLevels() && newLevelId != __instance.currentLevel.levelID){

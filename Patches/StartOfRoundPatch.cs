@@ -9,6 +9,21 @@ public class StartOfRoundPatch {
 	[HarmonyPatch("Start")]
 	[HarmonyPostfix]
 	private static void AutoRouteRandomDayOne(ref StartOfRound __instance){
+
+		// Build list of selectable level IDs that are registered in the terminal (LLL compat)
+		TerminalKeyword routeKeyword =  UnityObjectType.FindObjectOfType<Terminal>().terminalNodes.allKeywords[27];
+		Helper.levels = [];
+		RandomRouteOnly.Logger.LogDebug("Registered moons:");
+		foreach(CompatibleNoun n in routeKeyword.compatibleNouns){
+			if(n.result.terminalOptions != null && n.result.terminalOptions.Length > 1){
+				int id = n.result.terminalOptions[1].result.buyRerouteToMoon;
+				if(id != 3){
+					RandomRouteOnly.Logger.LogDebug(n.noun.word + " | ID = " + id);
+					Helper.levels.Add(id);
+				}
+			}
+		}
+
 		// Fly to random when the game starts, but only on the first day or if the ship is orbiting the company
 		// Fly to company when the game starts and it's the final day
 		if(TimeOfDay.Instance.daysUntilDeadline == 0) Helper.FlyToLevel(ref __instance, false, false);

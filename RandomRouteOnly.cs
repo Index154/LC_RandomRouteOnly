@@ -11,6 +11,7 @@ public class RandomRouteOnly : BaseUnityPlugin
     internal new static ManualLogSource Logger { get; private set; } = null!;
     internal static Harmony? Harmony { get; set; }
     internal static ConfigManager configManager = null!;
+    internal static bool isLLLloaded = false;
 
     private void Awake()
     {
