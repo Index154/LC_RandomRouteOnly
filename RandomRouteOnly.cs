@@ -23,7 +23,7 @@ public class RandomRouteOnly : BaseUnityPlugin
 
         Patch();
 
-        Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} has loaded!");
+        Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} has loaded!");
     }
 
     internal static void Patch()
