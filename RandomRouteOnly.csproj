@@ -5,7 +5,7 @@
         <AssemblyName>Index154.RandomRouteOnly</AssemblyName>
         <Product>RandomRouteOnly</Product>
         <!-- Change to whatever version you're currently on. -->
-        <Version>1.3.0</Version>
+        <Version>1.4.0</Version>
     </PropertyGroup>
 
     <!-- Project Properties -->
@@ -47,6 +47,10 @@
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" PrivateAssets="all"/>
         <PackageReference Include="LethalCompany.GameLibs.Steam" Version="*-*" PrivateAssets="all"/>
         <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" PrivateAssets="all"/>
+        <Reference Include="LethalConstellations">
+            <HintPath>..\LethalConstellations.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">

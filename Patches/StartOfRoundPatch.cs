@@ -1,3 +1,4 @@
+using BepInEx.Bootstrap;
 using GameNetcodeStuff;
 using HarmonyLib;
 
@@ -11,17 +12,18 @@ public class StartOfRoundPatch {
 	private static void AutoRouteRandomDayOne(ref StartOfRound __instance){
 		// Runs after loading a save file
 
+		// Check if LethalConstellations is active
+		if(Chainloader.PluginInfos.ContainsKey("com.github.darmuh.LethalConstellations")) Helper.constellationsLoaded = true;
+
 		// Build list of selectable level IDs that are registered in the terminal (LLL compat)
-		TerminalKeyword routeKeyword =  UnityObjectType.FindObjectOfType<Terminal>().terminalNodes.allKeywords[27];
+		Terminal terminal = UnityObjectType.FindObjectOfType<Terminal>();
+		// TerminalKeyword routeKeyword =  terminal.terminalNodes.allKeywords[27];	// Old scuffed way of getting registered moons
 		Helper.levels = [];
 		RandomRouteOnly.Logger.LogDebug("Registered moons:");
-		foreach(CompatibleNoun n in routeKeyword.compatibleNouns){
-			if(n.result.terminalOptions != null && n.result.terminalOptions.Length > 1){
-				int id = n.result.terminalOptions[1].result.buyRerouteToMoon;
-				if(id != 3){
-					RandomRouteOnly.Logger.LogDebug(n.noun.word + " | ID = " + id);
-					Helper.levels.Add(id);
-				}
+		foreach(SelectableLevel level in terminal.moonsCatalogueList){
+			if(level.name != "LiquidationLevel" && level.levelID != 3){
+				RandomRouteOnly.Logger.LogDebug(level.name + " | ID = " + level.levelID);
+				Helper.levels.Add(level);
 			}
 		}
 		
