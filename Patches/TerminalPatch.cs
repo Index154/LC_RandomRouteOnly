@@ -1,6 +1,4 @@
-using System.Linq;
 using HarmonyLib;
-using UnityEngine.Assertions.Must;
 
 namespace RandomRouteOnly.Patches;
 
@@ -24,7 +22,7 @@ public class TerminalPatch {
 	[HarmonyPostfix]
 	private static TerminalNode RestrictRouteUsage(TerminalNode __result){
 
-		RandomRouteOnly.Logger.LogDebug("TerminalNode => " + __result.name);
+		//RandomRouteOnly.Logger.LogDebug("TerminalNode => " + __result.name);
 
 		if(__result.name == "routeRandom" || __result.name == "routeRandomFilterWeather"){
 			Rerolls cr = GameNetworkManager.Instance.localPlayerController.gameObject.GetComponent<Rerolls>();

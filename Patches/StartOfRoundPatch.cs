@@ -1,3 +1,4 @@
+using System.Linq;
 using BepInEx.Bootstrap;
 using GameNetcodeStuff;
 using HarmonyLib;
@@ -16,14 +17,20 @@ public class StartOfRoundPatch {
 		if(Chainloader.PluginInfos.ContainsKey("com.github.darmuh.LethalConstellations")) Helper.constellationsLoaded = true;
 
 		// Build list of selectable level IDs that are registered in the terminal (LLL compat)
-		Terminal terminal = UnityObjectType.FindObjectOfType<Terminal>();
-		// TerminalKeyword routeKeyword =  terminal.terminalNodes.allKeywords[27];	// Old scuffed way of getting registered moons
+		// terminal.moonsCatalogueList does not contain hidden moons so we can not use it
 		Helper.levels = [];
-		RandomRouteOnly.Logger.LogDebug("Registered moons:");
-		foreach(SelectableLevel level in terminal.moonsCatalogueList){
-			if(level.name != "LiquidationLevel" && level.levelID != 3){
-				RandomRouteOnly.Logger.LogDebug(level.name + " | ID = " + level.levelID);
-				Helper.levels.Add(level);
+		TerminalKeyword routeKeyword =  UnityObjectType.FindObjectOfType<Terminal>().terminalNodes.allKeywords[27];
+		RandomRouteOnly.Logger.LogInfo("Registered moons:");
+		foreach(CompatibleNoun n in routeKeyword.compatibleNouns){
+			if(n.result.terminalOptions != null && n.result.terminalOptions.Length > 1){
+				int id = n.result.terminalOptions[1].result.buyRerouteToMoon;
+				if(id != 3 && n.noun.word != "LiquidationLevel"){
+					RandomRouteOnly.Logger.LogInfo(n.noun.word + " | ID = " + id);
+					// Need to get the SelectableLevel object here for LethalConstellations compat
+					SelectableLevel lvl = __instance.levels.Where(i => i.levelID == id).FirstOrDefault();
+					// Prevent duplicates because Dine has two route keywords for some reason and it would be added twice
+					if(!Helper.levels.Contains(lvl)) Helper.levels.Add(lvl);
+				}
 			}
 		}
 		
@@ -71,13 +78,32 @@ public class StartOfRoundPatch {
 			// Memorize the moon we are on before going to the company
 			Helper.previousLevel = __instance.currentLevel.levelID;
 		}else{
+			// Update the list of recently routed to levels - Compare previousLevel since this code would otherwise be run twice
+			if(RandomRouteOnly.configManager.noRepeatCount.Value != 0 && Helper.previousLevel != levelID){
+				Helper.recentLevels.Add(levelID);
+
+				if(RandomRouteOnly.configManager.noRepeatCount.Value < Helper.recentLevels.Count){
+
+					if(RandomRouteOnly.configManager.noRepeatCount.Value == -1){
+						// -1 = Never remove old entries. The list will be reset by the Helper once there's no new moon to route to anymore (or by routerandom-redexed)
+					}else{
+						// Remove oldest level to stay within the configured max number of moons to remember
+						Helper.recentLevels.RemoveAt(0);
+					}
+				}
+
+				RandomRouteOnly.Logger.LogInfo("Recently visited levels list:");
+				foreach(int id in Helper.recentLevels){
+					SelectableLevel lvl = __instance.levels.Where(i => i.levelID == id).FirstOrDefault();
+					RandomRouteOnly.Logger.LogInfo(lvl.name);
+				}
+			}
+
 			// Reset consecutive days counter when going somehwere new that isn't the company
 			if(__instance.currentLevel.levelID != levelID && Helper.previousLevel != levelID){
 				Helper.daysOnLevel = 0;
 				Helper.previousLevel = levelID;
 			}
 		}
-		
 	}
-
 }

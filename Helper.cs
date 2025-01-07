@@ -10,6 +10,7 @@ public class Helper(){
     public static bool constellationsLoaded = false;
     public static int daysOnLevel = 0;
     public static int previousLevel = -1;
+    public static List<int> recentLevels = [];
 
     static IEnumerator DelayStartGame(float delay){
         yield return new WaitForSeconds(delay);
@@ -19,8 +20,10 @@ public class Helper(){
     }
     public static int GetRandomLevel(ref StartOfRound __instance){
         bool isFirstDay = (__instance.gameStats.daysSpent == 0) && __instance.currentLevel.levelID == 0;
-        var possibleLevels = new List<int>();
+        var availableLevels = new List<int>();
+        var noRepeatLevels = new List<int>();
 
+        RandomRouteOnly.Logger.LogInfo("Selectable levels:");
         foreach(SelectableLevel level in levels){
             bool addLevel = true;
             // Exclude current level (unless it's day 1, otherwise day 1 will never be Experimentation)
@@ -30,10 +33,24 @@ public class Helper(){
                 RandomRouteOnly.Logger.LogDebug("Constellation support: Removing moon from random level selection");
                 if(!ConstellationsCompat.IsLevelInConstellation(level)) addLevel = false;
             }
-            
-            if(addLevel) possibleLevels.Add(level.levelID);
+            if(addLevel) availableLevels.Add(level.levelID);
+
+            // Attempt to also exclude levels that are in the recently visited levels list
+            if(!recentLevels.Contains(level.levelID) && addLevel){
+                RandomRouteOnly.Logger.LogInfo(level.name);
+                noRepeatLevels.Add(level.levelID);
+            }
         }
-        return possibleLevels[Random.Range(0, possibleLevels.Count)];
+
+        // If there are no possible levels to route to then reset the recent moons list and use all available moons instead
+        int chosenID = 0;
+        if(noRepeatLevels.Count < 1){
+            recentLevels.Clear();
+            chosenID = availableLevels[Random.Range(0, availableLevels.Count)];
+        }else{
+            chosenID = noRepeatLevels[Random.Range(0, noRepeatLevels.Count)];
+        }
+        return chosenID;
     }
     public static void FlyToLevel(ref StartOfRound __instance, bool randomLevel, bool autoLand){
         // StartOfRound is run by clients too so stop those here
@@ -41,7 +58,6 @@ public class Helper(){
 
 		bool isFirstDay = (__instance.gameStats.daysSpent == 0) && __instance.currentLevel.levelID == 0;
         bool maxDaysReached = false;
-		var possibleLevels = new List<int>();
         // 3 is default for flying to company on the final day
         int newLevelId = 3;
 
@@ -58,8 +74,13 @@ public class Helper(){
 
         // Prevent auto routing if the maximum number of days hasn't been reached yet (unless orbiting company or going to company or on day 0)
         if(!maxDaysReached && newLevelId != 3 && __instance.currentLevel.levelID != 3 && !isFirstDay){
-            RandomRouteOnly.Logger.LogDebug("Maximum days per moon not reached - Aborting reroute");
+            RandomRouteOnly.Logger.LogInfo("Maximum days per moon not reached - Aborting reroute");
             return;
+        }
+
+        // Add Experimentation to list of recent moons if we start there on day 1
+        if(isFirstDay && newLevelId == 0 && RandomRouteOnly.configManager.noRepeatCount.Value != 0){
+				recentLevels.Add(newLevelId);
         }
 
         // Fly to selected level if possible
