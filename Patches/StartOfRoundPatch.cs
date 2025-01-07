@@ -73,36 +73,40 @@ public class StartOfRoundPatch {
 	[HarmonyPatch("ChangeLevelServerRpc")]
 	[HarmonyPrefix]
 	private static void TrackLevelChanges(int levelID, int newGroupCreditsAmount, ref StartOfRound __instance){
-		
-		if(levelID == 3){
-			// Memorize the moon we are on before going to the company
-			Helper.previousLevel = __instance.currentLevel.levelID;
-		}else{
-			// Update the list of recently routed to levels - Compare previousLevel since this code would otherwise be run twice
-			if(RandomRouteOnly.configManager.noRepeatCount.Value != 0 && Helper.previousLevel != levelID){
-				Helper.recentLevels.Add(levelID);
 
-				if(RandomRouteOnly.configManager.noRepeatCount.Value < Helper.recentLevels.Count){
+		// We want only the host to run this
+		if(__instance.NetworkManager.IsHost){
+			
+			if(levelID == 3){
+				// Memorize the moon we are on before going to the company
+				Helper.previousLevel = __instance.currentLevel.levelID;
+			}else{
+				// Update the list of recently routed to levels - Compare previousLevel since this code would otherwise be run twice
+				if(RandomRouteOnly.configManager.noRepeatCount.Value != 0 && Helper.previousLevel != levelID && Helper.recentLevels[Helper.recentLevels.Count - 1] != levelID){
+					Helper.recentLevels.Add(levelID);
 
-					if(RandomRouteOnly.configManager.noRepeatCount.Value == -1){
-						// -1 = Never remove old entries. The list will be reset by the Helper once there's no new moon to route to anymore (or by routerandom-redexed)
-					}else{
-						// Remove oldest level to stay within the configured max number of moons to remember
-						Helper.recentLevels.RemoveAt(0);
+					if(RandomRouteOnly.configManager.noRepeatCount.Value < Helper.recentLevels.Count){
+
+						if(RandomRouteOnly.configManager.noRepeatCount.Value == -1){
+							// -1 = Never remove old entries. The list will be reset by the Helper once there's no new moon to route to anymore (or by routerandom-redexed)
+						}else{
+							// Remove oldest level to stay within the configured max number of moons to remember
+							Helper.recentLevels.RemoveAt(0);
+						}
+					}
+
+					RandomRouteOnly.Logger.LogInfo("Recently visited levels list:");
+					foreach(int id in Helper.recentLevels){
+						SelectableLevel lvl = __instance.levels.Where(i => i.levelID == id).FirstOrDefault();
+						RandomRouteOnly.Logger.LogInfo(lvl.name);
 					}
 				}
 
-				RandomRouteOnly.Logger.LogInfo("Recently visited levels list:");
-				foreach(int id in Helper.recentLevels){
-					SelectableLevel lvl = __instance.levels.Where(i => i.levelID == id).FirstOrDefault();
-					RandomRouteOnly.Logger.LogInfo(lvl.name);
+				// Reset consecutive days counter when going somehwere new that isn't the company
+				if(__instance.currentLevel.levelID != levelID && Helper.previousLevel != levelID){
+					Helper.daysOnLevel = 0;
+					Helper.previousLevel = levelID;
 				}
-			}
-
-			// Reset consecutive days counter when going somehwere new that isn't the company
-			if(__instance.currentLevel.levelID != levelID && Helper.previousLevel != levelID){
-				Helper.daysOnLevel = 0;
-				Helper.previousLevel = levelID;
 			}
 		}
 	}
