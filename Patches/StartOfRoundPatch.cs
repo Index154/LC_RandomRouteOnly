@@ -82,7 +82,7 @@ public class StartOfRoundPatch {
 				Helper.previousLevel = __instance.currentLevel.levelID;
 			}else{
 				// Update the list of recently routed to levels - Compare previousLevel since this code would otherwise be run twice
-				if(RandomRouteOnly.configManager.noRepeatCount.Value != 0 && Helper.previousLevel != levelID && Helper.recentLevels[Helper.recentLevels.Count - 1] != levelID){
+				if(RandomRouteOnly.configManager.noRepeatCount.Value != 0 && Helper.previousLevel != levelID){
 					Helper.recentLevels.Add(levelID);
 
 					if(RandomRouteOnly.configManager.noRepeatCount.Value < Helper.recentLevels.Count){
