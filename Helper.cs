@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using BepInEx.Bootstrap;
+using System.Linq;
 
 namespace RandomRouteOnly;
 
@@ -17,6 +19,28 @@ public class Helper(){
         // Land the ship. This is the proper way of doing it to avoid issues
         StartMatchLever lever = UnityEngine.Object.FindObjectOfType<StartMatchLever>();
         lever.StartGame();
+    }
+    public static void Prepare(ref StartOfRound __instance){
+        // Check if LethalConstellations is active
+		if(Chainloader.PluginInfos.ContainsKey("com.github.darmuh.LethalConstellations")) Helper.constellationsLoaded = true;
+
+		// Build list of selectable level IDs that are registered in the terminal (LLL compat)
+		// terminal.moonsCatalogueList does not contain hidden moons so we can not use it
+		Helper.levels = [];
+		TerminalKeyword routeKeyword =  UnityObjectType.FindObjectOfType<Terminal>().terminalNodes.allKeywords[27];
+		RandomRouteOnly.Logger.LogInfo("Registered moons:");
+		foreach(CompatibleNoun n in routeKeyword.compatibleNouns){
+			if(n.result.terminalOptions != null && n.result.terminalOptions.Length > 1){
+				int id = n.result.terminalOptions[1].result.buyRerouteToMoon;
+				if(id != 3 && n.noun.word != "LiquidationLevel"){
+					RandomRouteOnly.Logger.LogInfo(n.noun.word + " | ID = " + id);
+					// Need to get the SelectableLevel object here for LethalConstellations compat
+					SelectableLevel lvl = __instance.levels.Where(i => i.levelID == id).FirstOrDefault();
+					// Prevent duplicates because Dine has two route keywords for some reason and it would be added twice
+					if(!Helper.levels.Contains(lvl)) Helper.levels.Add(lvl);
+				}
+			}
+		}
     }
     public static int GetRandomLevel(ref StartOfRound __instance){
         bool isFirstDay = (__instance.gameStats.daysSpent == 0) && __instance.currentLevel.levelID == 0;
@@ -43,7 +67,7 @@ public class Helper(){
         }
 
         // If there are no possible levels to route to then reset the recent moons list and use all available moons instead
-        int chosenID = 0;
+        int chosenID;
         if(noRepeatLevels.Count < 1){
             recentLevels.Clear();
             chosenID = availableLevels[Random.Range(0, availableLevels.Count)];

@@ -1,44 +1,43 @@
 using System.Linq;
-using BepInEx.Bootstrap;
+using UnityEngine;
 using GameNetcodeStuff;
 using HarmonyLib;
+using System.Collections;
 
 namespace RandomRouteOnly.Patches;
 
 [HarmonyPatch(typeof(StartOfRound))]
 
 public class StartOfRoundPatch {
+	static IEnumerator DelayRerouteOnStart(StartOfRound __instance, float delay, bool randomLevel){
+        yield return new WaitForSeconds(delay);
+		Helper.FlyToLevel(ref __instance, randomLevel, false);
+    }
+
 	[HarmonyPatch("Start")]
 	[HarmonyPostfix]
-	private static void AutoRouteRandomDayOne(ref StartOfRound __instance){
+	private static void AutoRouteRandomOnStart(ref StartOfRound __instance){
 		// Runs after loading a save file
-
-		// Check if LethalConstellations is active
-		if(Chainloader.PluginInfos.ContainsKey("com.github.darmuh.LethalConstellations")) Helper.constellationsLoaded = true;
-
-		// Build list of selectable level IDs that are registered in the terminal (LLL compat)
-		// terminal.moonsCatalogueList does not contain hidden moons so we can not use it
-		Helper.levels = [];
-		TerminalKeyword routeKeyword =  UnityObjectType.FindObjectOfType<Terminal>().terminalNodes.allKeywords[27];
-		RandomRouteOnly.Logger.LogInfo("Registered moons:");
-		foreach(CompatibleNoun n in routeKeyword.compatibleNouns){
-			if(n.result.terminalOptions != null && n.result.terminalOptions.Length > 1){
-				int id = n.result.terminalOptions[1].result.buyRerouteToMoon;
-				if(id != 3 && n.noun.word != "LiquidationLevel"){
-					RandomRouteOnly.Logger.LogInfo(n.noun.word + " | ID = " + id);
-					// Need to get the SelectableLevel object here for LethalConstellations compat
-					SelectableLevel lvl = __instance.levels.Where(i => i.levelID == id).FirstOrDefault();
-					// Prevent duplicates because Dine has two route keywords for some reason and it would be added twice
-					if(!Helper.levels.Contains(lvl)) Helper.levels.Add(lvl);
-				}
-			}
-		}
-		
+		Helper.Prepare(ref __instance);
 		// Fly to company when the game starts and it's the final day (no auto landing so players can still join)
-		if(TimeOfDay.Instance.daysUntilDeadline == 0) Helper.FlyToLevel(ref __instance, false, false);
-		// Attempt to fly to random when the game starts, but only on the first day (and orbiting Experimentation) or if the ship is orbiting the company
-		else if(__instance.gameStats.daysSpent == 0 && __instance.currentLevel.levelID == 0 || __instance.currentLevel.levelID == 3) Helper.FlyToLevel(ref __instance, true, false);
+		if(TimeOfDay.Instance.daysUntilDeadline == 0) {
+			__instance.StartCoroutine(DelayRerouteOnStart(__instance, 7f, false));
+			RandomRouteOnly.Logger.LogInfo("Routing to company after loading save");
+		}
+		// Attempt to fly to random if the ship is orbiting the company
+		else if(__instance.currentLevel.levelID == 3) {
+			__instance.StartCoroutine(DelayRerouteOnStart(__instance, 7f, true));
+			RandomRouteOnly.Logger.LogInfo("Leaving company after loading save");
+		}
+	}
 
+	[HarmonyPatch("PlayFirstDayShipAnimation")]
+	[HarmonyPostfix]
+	private static void AutoRouteRandomDayOne(ref StartOfRound __instance){
+		// Runs on day 1 of a save file (around when the speaker audio starts playing)
+		Helper.Prepare(ref __instance);
+		RandomRouteOnly.Logger.LogInfo("Day 1 reroute");
+		if(__instance.currentLevel.levelID == 0) Helper.FlyToLevel(ref __instance, true, false);
 	}
 
 	[HarmonyPatch("SetShipReadyToLand")]
