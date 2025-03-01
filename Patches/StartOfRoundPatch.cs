@@ -21,8 +21,13 @@ public class StartOfRoundPatch {
 		Helper.Prepare(ref __instance);
 		// Fly to company when the game starts and it's the final day (no auto landing so players can still join)
 		if(TimeOfDay.Instance.daysUntilDeadline == 0) {
-			__instance.StartCoroutine(DelayRerouteOnStart(__instance, 7f, false));
-			RandomRouteOnly.Logger.LogInfo("Routing to company after loading save");
+			// Don't do anything if already at the Company
+			if(__instance.currentLevelID != 3){
+				__instance.StartCoroutine(DelayRerouteOnStart(__instance, 7f, false));
+				RandomRouteOnly.Logger.LogInfo("Routing to company on day 0 after loading save");
+			}else{
+				RandomRouteOnly.Logger.LogInfo("Already at company on day 0, skipping reroute");
+			}
 		}
 		// Attempt to fly to random if the ship is orbiting the company
 		else if(__instance.currentLevel.levelID == 3) {
@@ -36,7 +41,7 @@ public class StartOfRoundPatch {
 	private static void AutoRouteRandomDayOne(ref StartOfRound __instance){
 		// Runs on day 1 of a save file (around when the speaker audio starts playing)
 		Helper.Prepare(ref __instance);
-		RandomRouteOnly.Logger.LogInfo("Day 1 reroute");
+		RandomRouteOnly.Logger.LogInfo("First day reroute");
 		if(__instance.currentLevel.levelID == 0) Helper.FlyToLevel(ref __instance, true, false);
 	}
 
