@@ -31,7 +31,7 @@ public class ConfigManager {
         RandomRouteOnly.Logger.LogInfo("Random routing weights:");
         foreach(SelectableLevel lvl in levels){
             string name = lvl.name.Replace("Level", "");
-            ConfigEntry<int> lvlEntry = configFile.Bind("Weights", name + " weight", 50);
+            ConfigEntry<int> lvlEntry = configFile.Bind("Weights", name + " weight", 100);
             if(!levelWeights.ContainsKey(lvl.levelID)) {
                 levelWeights.Add(lvl.levelID, lvlEntry);
                 RandomRouteOnly.Logger.LogInfo(lvl.name + " weight = " + levelWeights[lvl.levelID].Value);
