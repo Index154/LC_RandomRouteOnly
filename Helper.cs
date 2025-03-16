@@ -52,7 +52,7 @@ public class Helper(){
         // Load weight configs
         ConfigManager.SetupLevelWeights(RandomRouteOnly.Conf, levels);
     }
-    public static int GetRandomLevel(StartOfRound __instance){
+    public static int GetRandomLevel(ref StartOfRound __instance){
         bool isFirstDay = (__instance.gameStats.daysSpent == 0) && __instance.currentLevel.levelID == 0;
         var availableLevels = new List<int>();
         var noRepeatLevels = new List<int>();
@@ -126,7 +126,7 @@ public class Helper(){
         if(__instance.currentLevel.levelID == 3 && !maxDaysReached) newLevelId = previousLevel;
 
         // Pick random target if necessary
-        if((randomLevel && maxDaysReached) || isFirstDay || newLevelId == -1) newLevelId = GetRandomLevel(__instance);
+        if((randomLevel && maxDaysReached) || isFirstDay || newLevelId == -1) newLevelId = GetRandomLevel(ref __instance);
 
         // Prevent auto routing if the maximum number of days hasn't been reached yet (unless orbiting company or going to company or on day 0)
         if(!maxDaysReached && newLevelId != 3 && __instance.currentLevel.levelID != 3 && !isFirstDay){
