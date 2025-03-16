@@ -39,7 +39,8 @@ public class StartOfRoundPatch {
 	[HarmonyPatch("PlayFirstDayShipAnimation")]
 	[HarmonyPostfix]
 	private static void AutoRouteRandomDayOne(ref StartOfRound __instance){
-		// Runs on day 1 of a save file (around when the speaker audio starts playing)
+		// Runs on day 1 of a save file / after being fired (around when the speaker audio starts playing)
+		// Had to put this here instead of Start() to avoid LLL loading order issues
 		Helper.Prepare(ref __instance);
 		RandomRouteOnly.Logger.LogInfo("First day reroute");
 		if(__instance.currentLevel.levelID == 0) Helper.FlyToLevel(ref __instance, true, false);

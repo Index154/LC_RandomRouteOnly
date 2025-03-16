@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using BepInEx.Configuration;
 
 namespace RandomRouteOnly;
@@ -10,6 +11,7 @@ public class ConfigManager {
     internal ConfigEntry<int> stayOnMoonDays = null!;
     // internal ConfigEntry<int> autoRerouteDelay = null!;      Unfinished idea
     internal ConfigEntry<bool> constellations = null!;
+    public static Dictionary<int, ConfigEntry<int>> levelWeights = [];
 
     internal void Setup(ConfigFile configFile) {
         rerollsPerPlayer = configFile.Bind("General", "Rerolls per player per quota", 1, new ConfigDescription("How many uses of the terminal command 'random' each player gets per quota"));
@@ -23,5 +25,17 @@ public class ConfigManager {
         // autoRerouteDelay = configFile.Bind("1. General", "Extra delay in seconds before auto routing to a new moon", 0, new ConfigDescription("Allows you to add some delay between returning to orbit and the ship automatically routing to a random moon. Might be useful because the reroute usually interrupts people who are talking"));
 
         constellations = configFile.Bind("Other", "Constellations compatibility", true, new ConfigDescription("Whether random routing should only select moons in the current constellations if LethalConstellations is enabled"));
+    }
+
+    internal static void SetupLevelWeights(ConfigFile configFile, List<SelectableLevel> levels) {
+        RandomRouteOnly.Logger.LogInfo("Random routing weights:");
+        foreach(SelectableLevel lvl in levels){
+            string name = lvl.name.Replace("Level", "");
+            ConfigEntry<int> lvlEntry = configFile.Bind("Weights", name + " weight", 50);
+            if(!levelWeights.ContainsKey(lvl.levelID)) {
+                levelWeights.Add(lvl.levelID, lvlEntry);
+                RandomRouteOnly.Logger.LogInfo(lvl.name + " weight = " + levelWeights[lvl.levelID].Value);
+            }
+        }
     }
 }

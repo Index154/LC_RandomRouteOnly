@@ -1,4 +1,5 @@
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 
@@ -10,7 +11,8 @@ public class RandomRouteOnly : BaseUnityPlugin
     public static RandomRouteOnly Instance { get; private set; } = null!;
     internal new static ManualLogSource Logger { get; private set; } = null!;
     internal static Harmony? Harmony { get; set; }
-    internal static ConfigManager configManager = null!;
+    public static ConfigManager configManager = null!;
+    public static ConfigFile Conf = null!;
     internal static bool isLLLloaded = false;
 
     private void Awake()
@@ -18,6 +20,7 @@ public class RandomRouteOnly : BaseUnityPlugin
         Logger = base.Logger;
         Instance = this;
 
+        Conf = Config;
         configManager = new ConfigManager();
         configManager.Setup(Config);
 
