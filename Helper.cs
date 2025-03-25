@@ -92,7 +92,7 @@ public class Helper(){
                 weightSum += kvp.Value.Value;
             }
         }
-        int selectionRoll = Random.Range(1, weightSum);
+        int selectionRoll = Random.Range(1, weightSum + 1);
         RandomRouteOnly.Logger.LogDebug("Level selection roll = " + selectionRoll);
         int chosenID = 0;
         foreach(int levelID in chosenList){
