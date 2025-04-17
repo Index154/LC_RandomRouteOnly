@@ -22,7 +22,7 @@ public class TerminalPatch {
 	[HarmonyPostfix]
 	private static TerminalNode RestrictRouteUsage(TerminalNode __result){
 
-		//RandomRouteOnly.Logger.LogDebug("TerminalNode => " + __result.name);
+		RandomRouteOnly.Logger.LogDebug("TerminalNode => " + __result.name);
 
 		if(__result.name == "routeRandom" || __result.name == "routeRandomFilterWeather"){
 			Rerolls cr = GameNetworkManager.Instance.localPlayerController.gameObject.GetComponent<Rerolls>();
@@ -30,7 +30,7 @@ public class TerminalPatch {
                 return noReroll;
             }
            	cr.rerolls -= 1;
-		}else if(__result.name.ToLowerInvariant().Contains("route") && !__result.name.Contains("Confirm") && (!__result.name.Contains("Company") || !RandomRouteOnly.configManager.allowCompany.Value)){
+		}else if(__result.name.ToLowerInvariant().Contains("route") && !__result.name.Contains("Confirm") && ((!__result.name.Contains("Company") && !__result.name.ToLowerInvariant().Contains("galetry")) || !RandomRouteOnly.configManager.allowCompany.Value)){
 			// All manual moon routes should have route in the name... I hope
 			// Todo: Make this work based on buyRerouteToMoon property instead?
 			return noManualRoutesAllowed;

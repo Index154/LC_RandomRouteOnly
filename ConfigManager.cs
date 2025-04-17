@@ -16,7 +16,7 @@ public class ConfigManager {
     internal void Setup(ConfigFile configFile) {
         rerollsPerPlayer = configFile.Bind("General", "Rerolls per player per quota", 1, new ConfigDescription("How many uses of the terminal command 'random' each player gets per quota"));
 
-        allowCompany = configFile.Bind("General", "Allow manually routing to Company", false, new ConfigDescription("If true, allows you to always route to the Company whenever you want"));
+        allowCompany = configFile.Bind("General", "Allow manually routing to Company", false, new ConfigDescription("If true, allows you to always route to the Company whenever you want. Also supports the modded moon Galetry"));
 
         noRepeatCount = configFile.Bind("General", "Number of previous moons to avoid", 0, new ConfigDescription("How many of the most recently routed to moons should be removed from the random routing pool. Useful for ensuring a certain level of variety. Set it to -1 if you want to avoid any and all moon repeats for as long as possible. In this case, once there are no more unvisited moons left to route to, the list of visited moons will be emptied again. Not tracked across game restarts", new AcceptableValueRange<int>(-1, 50), Array.Empty<object>()));
 
